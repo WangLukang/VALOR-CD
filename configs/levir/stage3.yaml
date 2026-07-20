@@ -1,0 +1,8 @@
+checkpoint: outputs/levir/stage2_detector/final_detector/best.pt
+split: test
+output_dir: outputs/levir/stage3_test
+batch_size: 8
+num_workers: 0
+pixel_threshold: 0.7
+image_threshold: 0.5
+export_masks: true

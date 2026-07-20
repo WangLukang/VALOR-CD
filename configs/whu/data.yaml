@@ -1,0 +1,16 @@
+root: data/WHU_224
+image_size: 224
+
+manifests:
+  train: manifests_spatial/train.csv
+  val: manifests_spatial/val.csv
+  test: manifests_spatial/test.csv
+
+split:
+  source: tiles.csv
+  output_dir: manifests_spatial
+  axis: row
+  train_ratio: 0.8
+  val_ratio: 0.1
+  gap_tiles: 1
+  min_change_pixels: 1

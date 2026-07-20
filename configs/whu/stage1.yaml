@@ -1,0 +1,136 @@
+output_root: outputs/whu/stage1_pseudo
+
+weak_teacher:
+  seed: 42
+  output_dir: outputs/whu/stage1_pseudo/weak_teacher
+  data:
+    config: configs/whu/data.yaml
+    batch_size: 8
+    num_workers: 4
+  model:
+    architecture: dinov2_strong_cam
+    model_id: facebook/dinov2-base
+    pretrained: true
+    freeze_backbone: true
+    embedding_dim: 256
+    topk_ratio: 0.05
+    backbone_image_size: 518
+    hidden_size: 768
+    num_hidden_layers: 12
+    num_attention_heads: 12
+    patch_size: 14
+  train:
+    epochs: 10
+    learning_rate: 0.0001
+    encoder_learning_rate_multiplier: 0.1
+    weight_decay: 0.0001
+    image_threshold: 0.5
+    mixed_precision: true
+    loss:
+      name: strong_cam_matching_prior
+      prior_consistency_weight: 0.0
+      prior_coverage_weight: 0.0
+      prior_separation_weight: 0.0
+      low_prior_suppression_weight: 0.15
+      negative_cam_weight: 0.03
+      negative_topk_weight: 0.15
+      negative_topk_ratio: 0.05
+      negative_margin: 0.05
+      negative_prior_interference_weight: 0.05
+      negative_prior_quantile: 0.8
+      local_radius: 2
+      robust_low_quantile: 0.05
+      robust_high_quantile: 0.95
+      high_prior_quantile: 0.9
+      low_prior_quantile: 0.5
+      coverage_target: 0.5
+      separation_margin: 0.2
+  evaluation:
+    cam_threshold: 0.5
+    background_quantile: 0.995
+    histogram_bins: 10000
+    prediction_scales: [196, 224, 252]
+    candidate_calibration:
+      name: negative_component_filter
+      min_component_pixels: 4
+      connectivity: 8
+      area_quantile: 0.9
+      mean_score_quantile: 0.9
+      peak_score_quantile: 0.9
+      max_reject_area_ratio: 0.05
+    checkpoint_metric: image_f1
+
+calibration:
+  mode: preserve_checkpoint
+  output_dir: outputs/whu/stage1_pseudo/calibrated_teacher
+
+soft_pseudo:
+  checkpoint: outputs/whu/stage1_pseudo/calibrated_teacher/best_candidate_calibrated.pt
+  split: train
+  output_dir: outputs/whu/stage1_pseudo/soft_pseudo_labels
+  export_cams: false
+  counterfactual:
+    mode: soft_suppress
+    unverified_scale: 0.9
+    min_component_pixels: 4
+    connectivity: 8
+    min_area_ratio: 0.0
+    max_candidates_per_image: 3
+    padding: 4
+    drop_threshold: 0.03
+    relative_drop_threshold: 0.05
+  pseudo_label:
+    temperature: 0.08
+    gamma: 1.0
+    min_confidence: 0.2
+    negative_confidence: 1.0
+    probability_power: 1.0
+    foreground_threshold: 0.5
+    refinement:
+      name: image_difference
+      strength: 0.35
+      gamma: 1.0
+      min_gate: 0.55
+      preserve_high_scores: true
+      score_temperature: 0.1
+      low_quantile: 0.05
+      high_quantile: 0.95
+      blur_kernel: 3
+      overexpansion:
+        enabled: true
+        trigger_foreground_ratio: 0.98
+        strength: 0.5
+        min_gate: 0.4
+        gamma: 1.0
+
+sam_pseudo:
+  source_dir: outputs/whu/stage1_pseudo/soft_pseudo_labels
+  output_dir: outputs/whu/stage1_pseudo/sam_pseudo_labels_sam_vit_h_t2
+  checkpoint: models/sam/sam_vit_h_4b8939.pth
+  model_type: vit_h
+  sam_family: sam
+  image_mode: t2
+  threshold: 0.5
+  seed_threshold: 0.85
+  fg_point_threshold: 0.85
+  bg_point_threshold: 0.2
+  positive_points: 3
+  negative_points: 4
+  min_region_pixels: 8
+  max_regions: 12
+  box_pad_pixels: 6
+  box_pad_ratio: 0.10
+  min_sam_score: 0.0
+  min_component_coverage: 0.20
+  min_pseudo_precision: 0.12
+  max_area_expansion: 8.0
+  max_mask_area_ratio: 0.75
+  adaptive_seed_grow:
+    enabled: false
+  seed_fallback: true
+  require_core_seed: false
+  open_kernel: 0
+  close_kernel: 3
+  min_component_pixels: 8
+  preview_count: 8
+  device: auto

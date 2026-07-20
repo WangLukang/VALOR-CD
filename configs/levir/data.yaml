@@ -1,0 +1,14 @@
+root: data/LEVIR_224
+image_size: 224
+
+manifests:
+  train: manifests_official/train.csv
+  val: manifests_official/val.csv
+  test: manifests_official/test.csv
+
+split:
+  source: tiles.csv
+  output_dir: manifests_official
+  strategy: official_split_covering_tiles
+  tile_size: 224
+  min_change_pixels: 1

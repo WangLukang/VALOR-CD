@@ -1,0 +1,63 @@
+output_root: outputs/whu/stage2_detector
+
+detector:
+  stage_name: soft-hard-robust-distillation
+  seed: 42
+  output_dir: outputs/whu/stage2_detector/final_detector
+  data:
+    pseudo_dir: outputs/whu/stage1_pseudo/soft_pseudo_labels
+    pseudo_manifest: train_pseudo_manifest.csv
+    pseudo_confidence_mode: manifest
+    hard_label_source:
+      root: outputs/whu/stage1_pseudo/sam_pseudo_labels_sam_vit_h_t2
+      manifest: train_sam_manifest.csv
+      label_column: pseudo_label
+      confidence_column: pseudo_confidence
+    supervised_config: configs/whu/data.yaml
+    image_size: 224
+    batch_size: 8
+    val_batch_size: 8
+    num_workers: 0
+    augment: true
+    time_swap_probability: 0.5
+    val_split: val
+  model:
+    architecture: dinov2_edge_guided_dense_change
+    model_id: facebook/dinov2-base
+    pretrained: true
+    local_files_only: false
+    freeze_backbone: true
+    selected_layers: [6, 9, 12]
+    fusion_channels: 128
+    decoder_channels: 128
+    high_res_channels: 32
+    topk_ratio: 0.05
+    use_edge_guidance: true
+    edge_channels: 32
+    edge_residual_init: 0.05
+  train:
+    epochs: 50
+    lr: 0.0002
+    encoder_lr: 0.00002
+    weight_decay: 0.01
+    mixed_precision: true
+    loss:
+      name: joint_soft_hard_distillation
+      soft_distill_weight: 1.0
+      soft_loss_type: sce
+      hard_loss_type: gce
+      hard_bce_weight: 0.2
+      hard_dice_weight: 0.7
+      hard_boundary_weight: 0.2
+      pairwise_affinity_weight: 0.05
+      generalized_ce_q: 0.7
+      sce_alpha: 0.5
+      sce_beta: 0.5
+      reverse_ce_eps: 0.0001
+      image_weight: 0.2
+      negative_weight: 0.08
+      confidence_floor: 0.05
+      use_image_pos_weight: true
+  evaluation:
+    pixel_threshold: 0.5
+    image_threshold: 0.5

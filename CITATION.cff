@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it and the associated paper."
+title: "VALOR-CD: Weakly Supervised Building Change Detection"
+type: software
+authors:
+  - family-names: Wang
+    given-names: Lukang
+version: 1.0.0
+date-released: 2026-07-20
+license: MIT
+repository-code: "https://github.com/WangLukang/VALOR-CD"
+url: "https://github.com/WangLukang/VALOR-CD"

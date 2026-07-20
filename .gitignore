@@ -1,0 +1,51 @@
+# Datasets, generated labels, checkpoints, and experiment outputs
+/data/
+/outputs/
+/runs/
+/checkpoints/
+/comparison/
+/Fig/
+
+# Model weights and large binary artifacts
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.onnx
+*.tif
+*.tiff
+
+# Local reports and office files
+*.docx
+*.pptx
+*.xlsx
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Environments and secrets
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Experiment services
+wandb/
+mlruns/
+lightning_logs/
+
+# Editors and operating systems
+.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
