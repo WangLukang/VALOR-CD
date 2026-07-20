@@ -131,7 +131,7 @@ python scripts/02_train_detector.py --config configs/levir/stage2.yaml
 python scripts/03_test.py --config configs/levir/stage3.yaml
 ```
 
-Stage 1 produces train-split soft and hard pseudo labels. Stage 2 trains `best.pt` and `last.pt`; the public Stage 3 configuration evaluates `best.pt` with the fixed 0.7 pixel threshold. To evaluate another checkpoint or split:
+Stage 1 produces train-split soft and hard pseudo labels. Stage 2 trains `best.pt`; the public Stage 3 configuration evaluates `best.pt` with the fixed 0.7 pixel threshold. To evaluate another checkpoint or split:
 
 ```bash
 python scripts/03_test.py --config configs/whu/stage3.yaml --checkpoint path/to/checkpoint.pt --split val
