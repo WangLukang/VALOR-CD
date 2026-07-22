@@ -137,23 +137,6 @@ python scripts/02_train_detector.py --config configs/levir/stage2.yaml
 python scripts/03_test.py --config configs/levir/stage3.yaml
 ```
 
-Stage 1 produces train-split soft and hard pseudo labels. Stage 2 trains `best.pt` and `last.pt`; the public Stage 3 configuration evaluates `best.pt` with the fixed 0.7 pixel threshold. To evaluate another checkpoint or split:
-
-```bash
-python scripts/03_test.py --config configs/whu/stage3.yaml --checkpoint path/to/checkpoint.pt --split val
-```
-
-No validation pixel mask is used to tune pseudo-label post-processing parameters. Validation masks are used for detector checkpoint selection and reporting. See [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md) for the supervision protocol.
-
-## VS Code
-
-1. Open the repository folder.
-2. Select the `wscd` Conda interpreter.
-3. Open **Run and Debug**.
-4. Choose one of the six `WHU`/`LEVIR` stage entries.
-
-The launch file uses the interpreter selected by VS Code and contains no machine-specific Python path.
-
 ## Reference Results
 
 Pixel-level results from the frozen public configuration (`best.pt`, threshold 0.7):
