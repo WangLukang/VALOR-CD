@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it and the associated paper."
-title: "VALOR-CD: Weakly Supervised Building Change Detection"
+title: "VALOR-CD: Candidate Reliability Validation and Robust Soft–Hard Distillation for Image-Level Weakly Supervised Building Change Detection"
 type: software
 authors:
   - family-names: Wang
