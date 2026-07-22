@@ -3,7 +3,7 @@
 [![CI](https://github.com/WangLukang/VALOR-CD/actions/workflows/ci.yml/badge.svg)](https://github.com/WangLukang/VALOR-CD/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Official implementation of a three-stage weakly supervised building change detection framework. The method learns from image-level change labels, constructs complementary soft and SAM-refined hard pseudo labels, and distills them into a dense bi-temporal detector.
+VALOR-CD: Candidate Reliability Validation and Robust Soft–Hard Distillation for Image-Level Weakly Supervised Building Change Detection
 
 > The public configuration is frozen to **DINOv2-Base + Top-5% MIL + SAM ViT-H + a fixed inference threshold of 0.7** for both WHU-CD and LEVIR-CD.
 
