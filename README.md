@@ -5,7 +5,7 @@
 
 Official implementation of a three-stage weakly supervised building change detection framework. The method learns from image-level change labels, constructs complementary soft and SAM-refined hard pseudo labels, and distills them into a dense bi-temporal detector.
 
-> The public configuration is frozen to **DINOv2-Base + Top-5% MIL + SAM ViT-H on T2 + a fixed inference threshold of 0.7** for both WHU-CD and LEVIR-CD.
+> The public configuration is frozen to **DINOv2-Base + Top-5% MIL + SAM ViT-H + a fixed inference threshold of 0.7** for both WHU-CD and LEVIR-CD.
 
 ## Method
 
