@@ -60,6 +60,12 @@ python -m pip install git+https://github.com/facebookresearch/segment-anything.g
 
 DINOv2-Base is downloaded automatically from the official `facebook/dinov2-base` Hugging Face repository. See [docs/WEIGHTS.md](docs/WEIGHTS.md) for offline use and the SAM ViT-H checkpoint.
 
+## Released Checkpoints
+
+The released `best.pt` checkpoints for WHU-CD and LEVIR-CD are available from [Baidu Netdisk](https://pan.baidu.com/s/1XSdV0ZKYTZJe5r85iNg5Mw?pwd=93p4) (extraction code: `93p4`).
+
+After downloading, place a dense-detector checkpoint at the path specified by the corresponding Stage 3 configuration, or provide its location with `--checkpoint`.
+
 ## Data Preparation
 
 Download the datasets from their official pages:
@@ -131,7 +137,7 @@ python scripts/02_train_detector.py --config configs/levir/stage2.yaml
 python scripts/03_test.py --config configs/levir/stage3.yaml
 ```
 
-Stage 1 produces train-split soft and hard pseudo labels. Stage 2 trains `best.pt`; the public Stage 3 configuration evaluates `best.pt` with the fixed 0.7 pixel threshold. To evaluate another checkpoint or split:
+Stage 1 produces train-split soft and hard pseudo labels. Stage 2 trains `best.pt` and `last.pt`; the public Stage 3 configuration evaluates `best.pt` with the fixed 0.7 pixel threshold. To evaluate another checkpoint or split:
 
 ```bash
 python scripts/03_test.py --config configs/whu/stage3.yaml --checkpoint path/to/checkpoint.pt --split val
