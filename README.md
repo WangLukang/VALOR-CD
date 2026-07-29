@@ -144,7 +144,7 @@ Pixel-level results from the frozen public configuration (`best.pt`, threshold 0
 | Dataset | Split | Precision | Recall | F1 | IoU |
 |---|---|---:|---:|---:|---:|
 | WHU-CD | validation | 87.41 | 84.98 | 86.17 | 75.71 |
-| WHU-CD | test | 88.98 | 86.26 | 87.60 | 77.93 |
+| WHU-CD | test | 89.09 | 85.99 | 87.51 | 77.80 |
 | LEVIR-CD | validation | 68.77 | 75.94 | 72.18 | 56.46 |
 | LEVIR-CD | test | 69.97 | 72.89 | 71.40 | 55.52 |
 
