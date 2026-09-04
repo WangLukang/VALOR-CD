@@ -69,6 +69,28 @@ def make_loader(
     )
 
 
+def build_train_calibration_loader(
+    data_root: Path,
+    data_config: dict,
+    image_size: int,
+    batch_size: int,
+    num_workers: int,
+) -> DataLoader:
+    calibration_dataset = ChangePairDataset(
+        data_root,
+        data_config["manifests"]["train"],
+        image_size=image_size,
+        augment=False,
+        return_mask=False,
+    )
+    return make_loader(
+        calibration_dataset,
+        batch_size,
+        num_workers,
+        shuffle=False,
+    )
+
+
 def build_training_criterion(
     train_config: dict, positive_weight: torch.Tensor
 ) -> nn.Module:
@@ -257,7 +279,7 @@ def calibrate_negative_threshold(
             model,
             t1,
             t2,
-            tuple(batch["mask"].shape[-2:]),
+            tuple(t1.shape[-2:]),
             mixed_precision,
             prediction_scales,
             score_calibration,
@@ -271,7 +293,7 @@ def calibrate_negative_threshold(
         negative_images += int(negative.sum())
     total = int(histogram.sum())
     if total == 0:
-        raise ValueError("Validation subset contains no image-level negative samples")
+        raise ValueError("Training calibration subset contains no image-level negatives")
     index = int(
         torch.searchsorted(histogram.cumsum(0), background_quantile * total).clamp(
             max=histogram_bins - 1
@@ -322,7 +344,7 @@ def calibrate_negative_candidates(
             model,
             t1,
             t2,
-            tuple(batch["mask"].shape[-2:]),
+            tuple(t1.shape[-2:]),
             mixed_precision,
             prediction_scales,
             score_calibration,
@@ -511,6 +533,13 @@ def main() -> None:
         else int(config["data"]["num_workers"])
     )
     train_loader = make_loader(train_dataset, batch_size, workers, True)
+    train_calibration_loader = build_train_calibration_loader(
+        data_root,
+        data_config,
+        image_size,
+        batch_size,
+        workers,
+    )
     val_loader = make_loader(val_dataset, batch_size, workers, False)
 
     model = build_cam_model(config["model"]).to(device)
@@ -621,7 +650,7 @@ def main() -> None:
         if background_quantile is not None:
             calibration = calibrate_negative_threshold(
                 model,
-                val_loader,
+                train_calibration_loader,
                 device,
                 mixed_precision,
                 float(background_quantile),
@@ -651,7 +680,7 @@ def main() -> None:
             else:
                 candidate_calibration = calibrate_negative_candidates(
                     model,
-                    val_loader,
+                    train_calibration_loader,
                     device,
                     mixed_precision,
                     pixel_threshold,

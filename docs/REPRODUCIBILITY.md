@@ -19,11 +19,14 @@ The same principal setup is used for WHU-CD and LEVIR-CD:
 
 Training masks are stored locally because they are part of the public datasets, but Stage 1 does not load them into the weak-supervision loss. It reads only image-level labels derived from whether a mask contains at least one changed pixel.
 
-Validation masks may be used to:
+Negative-response and candidate calibration are estimated only from image-level negative training pairs, without loading pixel-level masks.
 
-1. select the weak/dense checkpoint through the declared validation metric;
-2. monitor pixel-level pseudo-label and detector quality;
-3. report validation metrics.
+The Stage 1 weak-teacher checkpoint is selected by validation image-level F1. Within Stage 1, validation masks are used only for pixel-level metric monitoring and never for calibration.
+
+In Stage 1, validation masks may be used to:
+
+1. monitor pixel-level pseudo-label quality;
+2. report validation pixel-level metrics.
 
 Validation masks are not used to tune candidate-filter, counterfactual, difference-refinement, SAM, or final inference-threshold parameters. The released values are fixed across both datasets.
 
