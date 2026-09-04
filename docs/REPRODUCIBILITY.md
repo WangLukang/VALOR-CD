@@ -7,7 +7,7 @@ The same principal setup is used for WHU-CD and LEVIR-CD:
 - DINOv2-Base weak teacher with a frozen backbone.
 - Top-5% MIL pooling.
 - 10 Stage 1 epochs, batch size 8, random seed 42.
-- Mask-free negative-response calibration from image-level negative training samples.
+- Selectable mask-free negative-response calibration from image-level negative validation or training pairs.
 - Counterfactual candidate attenuation and difference-supported soft pseudo labels.
 - SAM ViT-H on the T2 RGB image, constrained by soft-label candidates.
 - Edge-guided DINOv2-Base dense detector.
@@ -19,9 +19,9 @@ The same principal setup is used for WHU-CD and LEVIR-CD:
 
 Training masks are stored locally because they are part of the public datasets, but Stage 1 does not load them into the weak-supervision loss. It reads only image-level labels derived from whether a mask contains at least one changed pixel.
 
-Negative-response and candidate calibration are estimated only from image-level negative training pairs, without loading pixel-level masks.
+Negative-response and candidate calibration use a dedicated loader controlled by `evaluation.calibration_source`. Both `val` and `train` modes disable augmentation, do not shuffle, and set `return_mask=False`, so calibration never loads pixel-level masks. The public configuration defaults to `val` to reproduce the historical calibration values. Set `calibration_source: train` for the manuscript's strict training-negative calibration protocol.
 
-The Stage 1 weak-teacher checkpoint is selected by validation image-level F1. Within Stage 1, validation masks are used only for pixel-level metric monitoring and never for calibration.
+The Stage 1 weak-teacher checkpoint is selected by validation image-level F1. Validation masks are used only for pixel-level metric monitoring and are never exposed to either calibration mode.
 
 In Stage 1, validation masks may be used to:
 

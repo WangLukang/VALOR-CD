@@ -46,6 +46,7 @@ weak_teacher:
       coverage_target: 0.5
       separation_margin: 0.2
   evaluation:
+    calibration_source: val
     cam_threshold: 0.5
     background_quantile: 0.995
     histogram_bins: 10000

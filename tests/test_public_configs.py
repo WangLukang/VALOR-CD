@@ -23,6 +23,7 @@ class PublicConfigurationTest(unittest.TestCase):
                 self.assertEqual(stage1["weak_teacher"]["model"]["model_id"], "facebook/dinov2-base")
                 self.assertEqual(stage1["weak_teacher"]["model"]["topk_ratio"], 0.05)
                 self.assertEqual(stage1["weak_teacher"]["train"]["epochs"], 10)
+                self.assertEqual(stage1["weak_teacher"]["evaluation"]["calibration_source"], "val")
                 self.assertEqual(stage1["sam_pseudo"]["model_type"], "vit_h")
                 self.assertEqual(stage1["sam_pseudo"]["image_mode"], "t2")
                 self.assertEqual(stage2["detector"]["model"]["model_id"], "facebook/dinov2-base")

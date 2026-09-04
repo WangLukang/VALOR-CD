@@ -69,16 +69,20 @@ def make_loader(
     )
 
 
-def build_train_calibration_loader(
+def build_calibration_loader(
     data_root: Path,
     data_config: dict,
     image_size: int,
     batch_size: int,
     num_workers: int,
+    source: str = "val",
 ) -> DataLoader:
+    source = str(source).strip().lower()
+    if source not in {"train", "val"}:
+        raise ValueError("calibration_source must be either 'train' or 'val'")
     calibration_dataset = ChangePairDataset(
         data_root,
-        data_config["manifests"]["train"],
+        data_config["manifests"][source],
         image_size=image_size,
         augment=False,
         return_mask=False,
@@ -293,7 +297,7 @@ def calibrate_negative_threshold(
         negative_images += int(negative.sum())
     total = int(histogram.sum())
     if total == 0:
-        raise ValueError("Training calibration subset contains no image-level negatives")
+        raise ValueError("Calibration subset contains no image-level negatives")
     index = int(
         torch.searchsorted(histogram.cumsum(0), background_quantile * total).clamp(
             max=histogram_bins - 1
@@ -532,13 +536,18 @@ def main() -> None:
         if args.num_workers is not None
         else int(config["data"]["num_workers"])
     )
+    evaluation_config = config["evaluation"]
+    calibration_source = str(
+        evaluation_config.get("calibration_source", "val")
+    ).strip().lower()
     train_loader = make_loader(train_dataset, batch_size, workers, True)
-    train_calibration_loader = build_train_calibration_loader(
+    calibration_loader = build_calibration_loader(
         data_root,
         data_config,
         image_size,
         batch_size,
         workers,
+        source=calibration_source,
     )
     val_loader = make_loader(val_dataset, batch_size, workers, False)
 
@@ -583,7 +592,6 @@ def main() -> None:
     epochs = args.epochs or int(config["train"]["epochs"])
     scheduler = CosineAnnealingLR(optimizer, T_max=epochs)
     threshold = float(config["train"]["image_threshold"])
-    evaluation_config = config["evaluation"]
     pixel_threshold = float(evaluation_config["cam_threshold"])
     background_quantile = evaluation_config.get("background_quantile")
     histogram_bins = int(evaluation_config.get("histogram_bins", 10000))
@@ -603,6 +611,7 @@ def main() -> None:
         f"train={len(train_dataset)}, val={len(val_dataset)}, "
         f"positive_weight={float(positive_weight):.4f}, "
         f"best_checkpoint=val_{checkpoint_metric}, "
+        f"calibration_source={calibration_source}, "
         f"self_teacher={self_teacher_enabled}"
     )
     for epoch in range(1, epochs + 1):
@@ -650,7 +659,7 @@ def main() -> None:
         if background_quantile is not None:
             calibration = calibrate_negative_threshold(
                 model,
-                train_calibration_loader,
+                calibration_loader,
                 device,
                 mixed_precision,
                 float(background_quantile),
@@ -659,6 +668,7 @@ def main() -> None:
                 score_calibration,
                 args.max_val_batches,
             )
+            calibration["source"] = calibration_source
             pixel_threshold = float(calibration["pixel_threshold"])
             print(
                 f"negative-label pixel calibration: threshold={pixel_threshold:.4f} "
@@ -680,7 +690,7 @@ def main() -> None:
             else:
                 candidate_calibration = calibrate_negative_candidates(
                     model,
-                    train_calibration_loader,
+                    calibration_loader,
                     device,
                     mixed_precision,
                     pixel_threshold,
@@ -689,6 +699,7 @@ def main() -> None:
                     dict(candidate_config),
                     args.max_val_batches,
                 )
+                candidate_calibration["source"] = calibration_source
                 if candidate_calibration.get("enabled", True):
                     print(
                         "negative candidate calibration: "

@@ -50,7 +50,7 @@ class Stage1CalibrationProtocolTest(unittest.TestCase):
             )
         ]
 
-    def test_calibration_loader_uses_train_manifest_without_masks(self) -> None:
+    def test_calibration_loader_defaults_to_val_manifest_without_masks(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             data_root = Path(temporary_directory)
             train_manifest = data_root / "train.csv"
@@ -65,7 +65,7 @@ class Stage1CalibrationProtocolTest(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            loader = TRAIN_P1_CAM.build_train_calibration_loader(
+            loader = TRAIN_P1_CAM.build_calibration_loader(
                 data_root=data_root,
                 data_config={
                     "manifests": {
@@ -78,12 +78,57 @@ class Stage1CalibrationProtocolTest(unittest.TestCase):
                 num_workers=0,
             )
 
+            self.assertEqual(loader.dataset.manifest, val_manifest)
+            self.assertFalse(loader.dataset.augment)
+            self.assertFalse(loader.dataset.return_mask)
+            self.assertIsInstance(loader.sampler, SequentialSampler)
+
+    def test_calibration_loader_can_use_train_manifest_without_masks(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            data_root = Path(temporary_directory)
+            train_manifest = data_root / "train.csv"
+            val_manifest = data_root / "val.csv"
+            header = "id,t1,t2,label\n"
+            train_manifest.write_text(
+                header + "train-pair,t1.png,t2.png,0\n",
+                encoding="utf-8",
+            )
+            val_manifest.write_text(
+                header + "val-pair,t1.png,t2.png,0\n",
+                encoding="utf-8",
+            )
+
+            loader = TRAIN_P1_CAM.build_calibration_loader(
+                data_root=data_root,
+                data_config={
+                    "manifests": {
+                        "train": train_manifest.name,
+                        "val": val_manifest.name,
+                    }
+                },
+                image_size=224,
+                batch_size=1,
+                num_workers=0,
+                source="train",
+            )
+
             self.assertEqual(loader.dataset.manifest, train_manifest)
             self.assertFalse(loader.dataset.augment)
             self.assertFalse(loader.dataset.return_mask)
             self.assertIsInstance(loader.sampler, SequentialSampler)
 
-    def test_main_wires_both_calibrations_to_train_loader(self) -> None:
+    def test_calibration_loader_rejects_unknown_source(self) -> None:
+        with self.assertRaisesRegex(ValueError, "train.*val"):
+            TRAIN_P1_CAM.build_calibration_loader(
+                data_root=Path("."),
+                data_config={"manifests": {}},
+                image_size=224,
+                batch_size=1,
+                num_workers=0,
+                source="test",
+            )
+
+    def test_main_wires_both_calibrations_to_selected_loader(self) -> None:
         main_tree = ast.parse(textwrap.dedent(inspect.getsource(TRAIN_P1_CAM.main)))
         calibration_calls = {
             node.func.id: node
@@ -101,7 +146,7 @@ class Stage1CalibrationProtocolTest(unittest.TestCase):
         for call in calibration_calls.values():
             self.assertGreaterEqual(len(call.args), 2)
             self.assertIsInstance(call.args[1], ast.Name)
-            self.assertEqual(call.args[1].id, "train_calibration_loader")
+            self.assertEqual(call.args[1].id, "calibration_loader")
 
     def test_negative_threshold_calibration_does_not_access_masks(self) -> None:
         calibration = TRAIN_P1_CAM.calibrate_negative_threshold(
